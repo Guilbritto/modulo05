@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
 import { FaGithubAlt, FaPlus, FaSpinner } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { Form, SubmitButton, List } from './styles';
+import { Form, SubmitButton, List, InputChange } from './styles';
 import Container from '../../components/Container';
 import api from '../../services/api';
+import { Exception } from 'handlebars';
 
 export default class Main extends Component {
   state = {
     newRepo: '',
     repositories: [],
     loading: false,
+    notFound: false,
   };
 
   componentDidMount() {
@@ -33,23 +35,38 @@ export default class Main extends Component {
   };
 
   handleSubmit = async e => {
-    e.preventDefault();
-    this.setState({ loading: true });
-    const { newRepo, repositories } = this.state;
-    const response = await api.get(`/repos/${newRepo}`);
-    const data = {
-      name: response.data.full_name,
-    };
+    try {
+      e.preventDefault();
+      this.setState({ loading: true });
+      const { newRepo, repositories } = this.state;
+      const repo = this.state.repositories.find(element => {
+        if (
+          element.name.toLowerCase() === this.state.newRepo.toLocaleLowerCase()
+        ) {
+          console.log(this.state.newRepo);
+          throw new Error('Repositório duplicado');
+        }
+      });
 
-    this.setState({
-      repositories: [...repositories, data],
-      newRepo: '',
-      loading: false,
-    });
+      const response = await api.get(`/repos/${newRepo}`);
+      const data = {
+        name: response.data.full_name,
+      };
+
+      this.setState({
+        repositories: [...repositories, data],
+        newRepo: '',
+        loading: false,
+        notFound: false,
+      });
+    } catch (err) {
+      console.error(`asdasdad: ${err}`);
+      this.setState({ notFound: true, loading: false });
+    }
   };
 
   render() {
-    const { repositories, newRepo, loading } = this.state;
+    const { repositories, newRepo, loading, notFound } = this.state;
 
     return (
       <Container>
@@ -58,7 +75,7 @@ export default class Main extends Component {
           Repository
         </h1>
 
-        <Form onSubmit={this.handleSubmit}>
+        <Form onSubmit={this.handleSubmit} notFound={notFound}>
           <input
             type="text"
             placeholder="Adicionar Repositório"

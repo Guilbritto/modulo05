@@ -99,3 +99,42 @@ export const IssuesList = styled.ul`
     }
   }
 `;
+export const Filter = styled.div`
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-top: 12px;
+  input {
+    margin-left: 3px;
+  }
+  span {
+    color: #7159c1;
+    font-size: 14px;
+    font-weight: bold;
+  }
+`;
+
+export const Pagination = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-item: center;
+  margin: 10px 5px;
+
+  button {
+    margin: 0px 5px;
+    border-radius: 4px;
+    width: 70px;
+    height: 35px;
+    background: #7159c1;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    border-style: none
+
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+`;

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import api from '../../services/api';
 import PropTypes from 'prop-types';
-import { Loading, Owner, IssuesList } from './styles';
+import { Loading, Owner, IssuesList, Filter, Pagination } from './styles';
 import Container from '../../components/Container';
 import { Link } from 'react-router-dom';
 
@@ -18,6 +18,9 @@ export default class Repository extends Component {
     repository: {},
     issues: [],
     loading: true,
+    page: 1,
+    filter: 'all',
+    pagination: '5',
   };
 
   async componentDidMount() {
@@ -42,6 +45,93 @@ export default class Repository extends Component {
     });
   }
 
+  handleFilter = async e => {
+    const { match } = this.props;
+    const repoName = decodeURIComponent(match.params.repository);
+
+    if (e.target.name === 'pagination') {
+      var value = e.target.value;
+      this.setState(
+        {
+          pagination: value,
+        },
+        async () => {
+          const response = await api.get(`/repos/${repoName}/issues`, {
+            params: {
+              state: this.state.filter,
+              per_page: this.state.pagination,
+              page: this.state.page,
+            },
+          });
+          this.setState({
+            issues: response.data,
+          });
+        }
+      );
+    }
+    if (e.target.name === 'filter') {
+      var id = e.target.id;
+      this.setState(
+        {
+          filter: id,
+        },
+        async () => {
+          const response = await api.get(`/repos/${repoName}/issues`, {
+            params: {
+              state: this.state.filter,
+              per_page: this.state.pagination,
+              page: this.state.page,
+            },
+          });
+          this.setState({
+            issues: response.data,
+          });
+        }
+      );
+    }
+    if (e.target.name === 'nextPage') {
+      var id = e.target.id;
+      this.setState(
+        {
+          page: this.state.page + 1,
+        },
+        async () => {
+          const response = await api.get(`/repos/${repoName}/issues`, {
+            params: {
+              state: this.state.filter,
+              per_page: this.state.pagination,
+              page: this.state.page,
+            },
+          });
+          this.setState({
+            issues: response.data,
+          });
+        }
+      );
+    }
+    if (e.target.name === 'prevPage') {
+      var id = e.target.id;
+      this.setState(
+        {
+          page: this.state.page - 1,
+        },
+        async () => {
+          const response = await api.get(`/repos/${repoName}/issues`, {
+            params: {
+              state: this.state.filter,
+              per_page: this.state.pagination,
+              page: this.state.page,
+            },
+          });
+          this.setState({
+            issues: response.data,
+          });
+        }
+      );
+    }
+    console.log(this.state);
+  };
+
   render() {
     const { loading, repository, issues } = this.state;
     if (loading) {
@@ -55,6 +145,47 @@ export default class Repository extends Component {
           <h1>{repository.name}</h1>
           <p>{repository.description}</p>
         </Owner>
+        <Filter>
+          <div>
+            <span>All</span>
+            <input
+              type="radio"
+              name="filter"
+              id="all"
+              onClick={this.handleFilter}
+            />
+          </div>
+          <div>
+            <span>Open</span>
+            <input
+              type="radio"
+              name="filter"
+              id="open"
+              onClick={this.handleFilter}
+            />
+          </div>
+          <div>
+            <span>Closed</span>
+            <input
+              type="radio"
+              name="filter"
+              id="closed"
+              onClick={this.handleFilter}
+            />
+          </div>
+          <div>
+            <select
+              name="pagination"
+              id="pagination"
+              onChange={this.handleFilter}
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+            </select>
+          </div>
+        </Filter>
 
         <IssuesList>
           {issues.map(issue => (
@@ -72,6 +203,23 @@ export default class Repository extends Component {
             </li>
           ))}
         </IssuesList>
+        <Pagination>
+          <div>
+            <span>{this.state.page}</span>
+          </div>
+          <div>
+            <button
+              onClick={this.handleFilter}
+              disabled={this.state.page === 1 ? true : false}
+              name="prevPage"
+            >
+              Anterior
+            </button>
+            <button name="nextPage" onClick={this.handleFilter}>
+              Proxima
+            </button>
+          </div>
+        </Pagination>
       </Container>
     );
   }

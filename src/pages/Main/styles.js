@@ -11,7 +11,12 @@ export const Form = styled.form`
     padding: 10px 15px;
     border-radius: 4px;
     font-size: 16px;
-    outline-color: #7159c1;
+    outline-color: ${props => (props.notFound ? 'red' : '#7159c1')};
+    ${props =>
+      props.notFound &&
+      css`
+        border-color: red;
+      `}
   }
 `;
 
